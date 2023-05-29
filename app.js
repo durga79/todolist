@@ -9,7 +9,7 @@ const app=express();
 app.set("view engine", "ejs");
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static("public"));
-mongoose.connect("mongodb+srv://nani:Nani%40123@cluster0.9sjwfvr.mongodb.net/todolistDB",{useNewUrlParser:true});
+mongoose.connect("mongodb://127.0.0.1:27017/todolistDB",{useNewUrlParser:true});
 const itemsSchema= {
     name:String
 };
@@ -43,7 +43,7 @@ app.get("/",async(req,res)=>{
         if(foundItems.length === 0)
         {
             Item.insertMany(defaultItems)
-               .then(function () {
+               .then(()=> {
                    console.log("Successfully saved defult items to DB");
                   })
                 .catch(function (err) {
@@ -68,7 +68,8 @@ app.get("/",async(req,res)=>{
 app.get("/:customerListName",function(req,res){
     const customListName=_.capitalize(req.params.customerListName);
 
-    List.findOne({name:customListName}).then(foundList=>{
+    List.findOne({name:customListName})
+      .then(foundList=>{
       
         
             if(!foundList){
@@ -83,8 +84,11 @@ app.get("/:customerListName",function(req,res){
             else{
                 res.render("list",{listTitle:foundList.name,newListItems:foundList.items});
             }
-    
+        })
+     .catch(err=>{
+        console.log(err);
     });
+    
   
 });
 
@@ -101,7 +105,8 @@ app.post("/",function(req,res){
         res.redirect("/");
     }
     else{
-        List.findOne({name:listName}).then(foundList=>{
+        List.findOne({name:listName})
+        .then(foundList=>{
           foundList.items.push(item);
           foundList.save();
           res.redirect("/"+listName);
